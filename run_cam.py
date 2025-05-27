@@ -1,9 +1,9 @@
-#from astra_camera import Camera
+from astra_camera import Camera
 import cv2
 import numpy as np
 from canbus import post
 
-#cam = Camera()
+cam = Camera()
 def get_info():
     try:
         with open("coco.names", "r") as f:
@@ -15,13 +15,9 @@ def get_info():
         net.setPreferableBackend(cv2.dnn.DNN_BACKEND_OPENCV)
         net.setPreferableTarget(cv2.dnn.DNN_TARGET_CPU) 
         
-        cap = cv2.VideoCapture(0) 
-        cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
-        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
         while True:
-            ret, frame = cap.read()
-            if not ret:
-                break
+            depth, rgb = cam.get_depth_and_color()
+            frame = cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR)
                 
             height, width, _ = frame.shape
             blob = cv2.dnn.blobFromImage(frame, 1/255.0, (320,320), swapRB=True, crop=False)
@@ -43,7 +39,6 @@ def get_info():
                         #tinh angle 
                         #x_mid = int((x+w)/2)
                         #x_mid = 
-                        post(25, 0, 1)
                         
                         label = f"Person: {float(confidence):.2f}"
                         cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
@@ -55,11 +50,10 @@ def get_info():
             if key == 27:
                 cv2.destroyAllWindows()
                 break
-        
-        cap.release()
+
     except Exception as e:
         print(e)
-    #finally:
+    finally:
         #cam.unload()
 
 get_info()
